@@ -180,6 +180,11 @@ function startGame() {
   drawHold();
   drawNextPreviews();
   loadRanking();
+  // 게임 시작 후에도 exit 버튼 이벤트 재등록
+  const exitBtnAfterStart = document.getElementById('exit-btn');
+  if (exitBtnAfterStart) {
+    exitBtnAfterStart.onclick = window.handleExit;
+  }
   if (animFrameId) {
     cancelAnimationFrame(animFrameId);
     animFrameId = null;
@@ -1040,5 +1045,19 @@ window.addEventListener('load', () => {
   document.getElementById('start-modal').classList.remove('hidden');
   startGameLoop();
 });
+
+const exitBtn = document.getElementById('exit-btn');
+if (exitBtn) {
+  exitBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    window.handleExit();
+  });
+  // 터치 이벤트도 추가
+  exitBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.handleExit();
+  });
+}
 
 })();
