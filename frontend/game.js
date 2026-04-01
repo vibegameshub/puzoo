@@ -72,25 +72,18 @@ const nextCanvases = document.querySelectorAll('.next-canvas');
 
 const effects = new EffectsManager(effectsCanvas);
 
-// ─── 모바일 패널 DOM ──────────────────────
-const mobileHoldCanvas = document.getElementById('mobile-hold-canvas');
-const mobileHoldCtx = mobileHoldCanvas ? mobileHoldCanvas.getContext('2d') : null;
-const mobileNextCanvases = document.querySelectorAll('.m-next-canvas');
-
 // ─── 사이즈 계산 ───────────────────────────
 function calcSize() {
   const isMobile = window.innerWidth <= 768;
 
   if (isMobile) {
-    // 조이패드 높이 측정
     const ctrl = document.getElementById('mobile-controls');
     const joystickH = ctrl ? ctrl.offsetHeight : 170;
-    // CSS 변수로 조이패드 높이 전달
     document.documentElement.style.setProperty('--joystick-h', joystickH + 'px');
 
-    const sidePanel = 60;
-    const availW = window.innerWidth - sidePanel * 2 - 8; // gap 여유
-    const availH = window.innerHeight - joystickH - 8;    // 상하 여유
+    const sidePanel = 65;
+    const availW = window.innerWidth - sidePanel * 2 - 8;
+    const availH = window.innerHeight - joystickH - 8;
     cellSize = Math.floor(Math.min(availW / COLS, availH / ROWS));
     cellSize = Math.max(cellSize, 14);
   } else {
@@ -105,6 +98,13 @@ function calcSize() {
   gameCanvas.width = bw;
   gameCanvas.height = bh;
 
+  syncEffectCanvas();
+}
+
+// ─── 이펙트 캔버스 동기화 ──────────────────
+function syncEffectCanvas() {
+  const bw = gameCanvas.width;
+  const bh = gameCanvas.height;
   const margin = 40;
   effects.resize(bw + margin * 2, bh + margin * 2);
   effectsCanvas.style.left = -margin + 'px';
@@ -610,17 +610,6 @@ async function loadRanking() {
                      '<span class="rank-score">' + e.score.toLocaleString() + '</span>';
       ul.appendChild(li);
     });
-    // 모바일 TOP 3
-    const mul = document.getElementById('mobile-ranking-list');
-    if (mul) {
-      mul.innerHTML = '';
-      data.slice(0, 3).forEach((e, i) => {
-        const li = document.createElement('li');
-        li.innerHTML = '<span class="rank-name">' + (i + 1) + '. ' + e.nickname + '</span>' +
-                       '<span class="rank-score">' + e.score.toLocaleString() + '</span>';
-        mul.appendChild(li);
-      });
-    }
     return data;
   } catch (e) { return null; }
 }
@@ -636,42 +625,17 @@ function updateUI() {
   document.getElementById('level-display').textContent = level;
   document.getElementById('lines-display').textContent = lines;
   document.getElementById('combo-display').textContent = combo;
-
-  // 모바일 패널 동기화
-  const mScore = document.getElementById('m-score');
-  if (mScore) {
-    mScore.textContent = score.toLocaleString();
-    document.getElementById('m-level').textContent = level;
-    document.getElementById('m-lines').textContent = lines;
-    document.getElementById('m-combo').textContent = combo;
-  }
-  // fever glow 동기화
-  const mcb = document.getElementById('mobile-combo-box');
-  if (mcb) {
-    if (feverMode) mcb.classList.add('fever-glow');
-    else mcb.classList.remove('fever-glow');
-  }
 }
 
 function drawHold() {
   holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
-  if (mobileHoldCtx) mobileHoldCtx.clearRect(0, 0, mobileHoldCanvas.width, mobileHoldCanvas.height);
   if (!holdType) return;
   const floatY = Math.sin((prevTime || 0) * 0.003) * 2;
   drawPreview(holdCtx, holdCanvas, holdType, floatY);
-  if (mobileHoldCtx) drawPreview(mobileHoldCtx, mobileHoldCanvas, holdType, floatY);
 }
 
 function drawNextPreviews() {
   nextCanvases.forEach((cvs, i) => {
-    const ctx = cvs.getContext('2d');
-    ctx.clearRect(0, 0, cvs.width, cvs.height);
-    if (i < nextQueue.length) {
-      const floatY = Math.sin((prevTime || 0) * 0.003 + i * 0.7) * 2;
-      drawPreview(ctx, cvs, nextQueue[i], floatY);
-    }
-  });
-  mobileNextCanvases.forEach((cvs, i) => {
     const ctx = cvs.getContext('2d');
     ctx.clearRect(0, 0, cvs.width, cvs.height);
     if (i < nextQueue.length) {
@@ -772,7 +736,7 @@ mobileBtn('btn-start', () => {
 
 // ─── 메인 게임 루프 ────────────────────────
 let prevTime = 0;
-let boardDirty = true;  // dirty flag: 보드 변경 시만 재렌더
+let boardDirty = true;
 let animFrameId = null;
 
 function startGameLoop() {
@@ -785,7 +749,6 @@ function gameLoop(timestamp) {
   const dt = timestamp - prevTime;
   prevTime = timestamp;
 
-  // 프레임 스킵 방지 (탭 전환 후 복귀 시)
   if (dt > 200) {
     lastDropTime = timestamp;
     animFrameId = requestAnimationFrame(gameLoop);
@@ -1076,45 +1039,28 @@ function tryRestoreGame() {
   return false;
 }
 
-// ─── 이펙트 캔버스 동기화 ──────────────────
-function syncEffectCanvas() {
-  const bw = COLS * cellSize;
-  const bh = ROWS * cellSize;
-  const margin = 40;
-  effects.resize(bw + margin * 2, bh + margin * 2);
-  effectsCanvas.style.left = -margin + 'px';
-  effectsCanvas.style.top = -margin + 'px';
-}
-
 // ─── 화면 전환 감지 및 게임 루프 복원 ──────
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     saveGameState();
   } else {
-    // 복귀 시 게임 루프 재시작
     if (state === 'playing' || state === 'paused' || state === 'clearing' || state === 'gameover') {
       lastDropTime = 0;
       startGameLoop();
     }
     calcSize();
-    syncEffectCanvas();
     boardDirty = true;
   }
 });
 
 window.addEventListener('resize', () => {
   calcSize();
-  syncEffectCanvas();
   boardDirty = true;
-  if (state === 'playing' || state === 'paused') {
-    render(prevTime || performance.now());
-  }
 });
 
 document.addEventListener('fullscreenchange', () => {
   setTimeout(() => {
     calcSize();
-    syncEffectCanvas();
     boardDirty = true;
     if (state === 'playing' || state === 'paused' || state === 'clearing' || state === 'gameover') {
       lastDropTime = 0;
@@ -1124,12 +1070,14 @@ document.addEventListener('fullscreenchange', () => {
 });
 
 // ─── EXIT 버튼 ─────────────────────────────
-function exitGame() {
+function handleExit() {
   if (state === 'playing' || state === 'paused') {
     if (!confirm('게임을 종료하고 처음으로 돌아갈까요?\n현재 점수는 저장되지 않습니다.')) return;
   }
-  if (animFrameId) cancelAnimationFrame(animFrameId);
-  animFrameId = null;
+  if (animFrameId) {
+    cancelAnimationFrame(animFrameId);
+    animFrameId = null;
+  }
   state = 'start';
   clearSavedState();
   board = null;
@@ -1137,18 +1085,27 @@ function exitGame() {
   currentPiece = null;
   holdType = null;
   score = 0; level = 1; lines = 0; combo = 0;
+  feverMode = false;
   effects.clear();
   gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+  holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
   document.getElementById('gameover-modal').classList.add('hidden');
   document.getElementById('pause-overlay').classList.add('hidden');
   document.getElementById('start-modal').classList.remove('hidden');
   startGameLoop();
 }
 
-// EXIT 버튼 바인딩
-const exitBtnDesktop = document.getElementById('exit-btn-desktop');
-if (exitBtnDesktop) exitBtnDesktop.addEventListener('click', exitGame);
-mobileBtn('btn-exit', exitGame);
+// EXIT 버튼 바인딩 (click + touchend 모두)
+document.querySelectorAll('.exit-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleExit();
+  });
+  btn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    handleExit();
+  });
+});
 
 // ─── 시작 ──────────────────────────────────
 loadRanking();

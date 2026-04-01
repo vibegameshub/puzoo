@@ -25,10 +25,12 @@ body::after {
   z-index: 9999;
 }
 
-/* ─── 게임 컨테이너 ──────────────────── */
+/* ─── 게임 컨테이너 (3컬럼 공통) ─────── */
 #game-container {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
+  justify-content: center;
   gap: 14px;
   position: relative;
 }
@@ -65,8 +67,15 @@ body::after {
   text-shadow: 0 0 8px #88ccff;
 }
 
-/* ─── HOLD 패널 ──────────────────────── */
-#hold-panel { width: 120px; text-align: center; }
+/* ─── 왼쪽 패널 ─────────────────────── */
+#left-panel {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
 
 #hold-canvas {
   background: rgba(255,255,255,0.03);
@@ -76,8 +85,13 @@ body::after {
   margin: 0 auto;
 }
 
+#left-panel .info-box { width: 100%; }
+
+#combo-display { color: #FFE044; text-shadow: 0 0 8px #FFE044; }
+.fever-glow { border-color: #FF6644 !important; box-shadow: 0 0 14px rgba(255,102,68,0.4); }
+
 /* ─── 보드 ───────────────────────────── */
-#board-wrapper { position: relative; }
+#board-wrapper { position: relative; flex-shrink: 0; }
 
 #game-canvas {
   display: block;
@@ -90,19 +104,17 @@ body::after {
 #effects-canvas {
   position: absolute;
   pointer-events: none;
+  z-index: 10;
 }
 
-/* ─── 사이드 패널 ────────────────────── */
-#side-panel {
-  width: 160px;
+/* ─── 오른쪽 패널 ────────────────────── */
+#right-panel {
+  width: 150px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
 }
-
-#combo-display { color: #FFE044; text-shadow: 0 0 8px #FFE044; }
-
-.fever-glow { border-color: #FF6644 !important; box-shadow: 0 0 14px rgba(255,102,68,0.4); }
 
 /* Next 미리보기 */
 #next-panel { display: flex; flex-direction: column; gap: 4px; align-items: center; }
@@ -112,7 +124,29 @@ body::after {
   border-radius: 4px;
 }
 
+/* EXIT 버튼 */
+.exit-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(136,170,204,0.2);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: #8899aa;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.exit-btn:hover {
+  border-color: #FF6644;
+  color: #FF6644;
+}
+
 /* 랭킹 */
+#ranking-box { width: 100%; }
 #ranking-list {
   list-style: none;
   font-size: 10px;
@@ -293,9 +327,9 @@ body::after {
   display: none;
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  background: #1a1a24;
+  background: rgba(0,0,0,0.92);
   border-top: 1px solid rgba(136,170,204,0.15);
-  padding: 8px 16px 12px;
+  padding: 6px 16px 10px;
   z-index: 200;
 }
 
@@ -406,141 +440,81 @@ body::after {
   letter-spacing: 1px;
 }
 
-/* ─── 모바일 전용 패널 (데스크탑에서 숨김) ── */
-#mobile-left-panel { display: none; }
-#mobile-right-panel { display: none; }
-
 /* ─── 반응형: 모바일 ─────────────────── */
 @media (max-width: 768px) {
   body {
-    align-items: flex-start;
-    justify-content: flex-start;
+    align-items: flex-end;
+    justify-content: center;
     overflow: hidden;
     height: 100vh;
   }
 
-  /* 게임 컨테이너: 가로 배치 (좌패널 + 보드 + 우패널) */
   #game-container {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: center;
     gap: 2px;
-    width: 100%;
-    height: calc(100vh - var(--joystick-h, 170px));
-    padding: 0;
+    align-items: flex-end;
+    padding-bottom: var(--joystick-h, 170px);
+    height: 100vh;
   }
 
-  /* 데스크탑 전용 패널 숨김 */
-  #hold-panel { display: none; }
-  #side-panel { display: none; }
-
-  /* ── 모바일 패널 공통 ── */
-  .mp-label {
+  /* 왼쪽 패널 축소 */
+  #left-panel {
+    width: 65px;
+    gap: 3px;
+  }
+  #left-panel .panel-title {
     font-size: 8px;
     letter-spacing: 1px;
-    color: #6688aa;
-    text-shadow: 0 0 4px #6688aa;
-    text-align: center;
+    margin-bottom: 2px;
+  }
+  #hold-canvas {
+    width: 58px;
+    height: 44px;
+  }
+  #left-panel .info-box {
+    padding: 3px 4px;
+  }
+  #left-panel .info-label {
+    font-size: 7px;
+    letter-spacing: 1px;
     margin-bottom: 1px;
   }
-  .mp-value {
+  #left-panel .info-value {
     font-size: 11px;
-    color: #fff;
-    text-shadow: 0 0 6px #88ccff;
-    text-align: center;
-  }
-  .mp-box {
-    text-align: center;
-    margin-bottom: 4px;
-  }
-  #mobile-combo-box .mp-value {
-    color: #FFE044;
-    text-shadow: 0 0 8px #FFE044;
   }
 
-  /* ── 모바일 좌측 패널 (60px) ── */
-  #mobile-left-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    width: 60px;
-    min-width: 60px;
-    max-width: 60px;
-    padding-bottom: 4px;
-    gap: 2px;
-    flex-shrink: 0;
-  }
-  #mobile-hold-canvas {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(136,170,204,0.25);
-    border-radius: 3px;
-    display: block;
-  }
-
-  /* ── 보드 래퍼 ── */
-  #board-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-
-  /* ── 모바일 우측 패널 (60px) ── */
-  #mobile-right-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    width: 60px;
-    min-width: 60px;
-    max-width: 60px;
-    padding-bottom: 4px;
+  /* 오른쪽 패널 축소 */
+  #right-panel {
+    width: 65px;
     gap: 3px;
-    flex-shrink: 0;
   }
-  .m-next-canvas {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(136,170,204,0.12);
-    border-radius: 3px;
-    display: block;
+  #right-panel .panel-title {
+    font-size: 8px;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
   }
-  #mobile-ranking-list {
-    list-style: none;
+  .next-canvas {
+    width: 58px !important;
+    height: 44px !important;
+  }
+  #right-panel .exit-btn {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+  #ranking-box {
+    padding: 3px 4px;
+  }
+  #ranking-box .info-label {
     font-size: 7px;
-    color: #8899aa;
-    width: 100%;
-    padding: 0 2px;
+    letter-spacing: 1px;
   }
-  #mobile-ranking-list li {
-    display: flex;
-    justify-content: space-between;
-    padding: 1px 0;
-    border-bottom: 1px solid rgba(136,170,204,0.06);
+  #ranking-list {
+    font-size: 7px;
+    max-height: 80px;
   }
-  #mobile-ranking-list .rank-name {
-    color: #aabbcc;
-    max-width: 30px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  #mobile-ranking-list .rank-score {
-    color: #88ccff;
-    text-shadow: 0 0 4px #88ccff;
-  }
-  #mobile-ranking-list li:first-child .rank-score {
-    color: #FFE044;
-    text-shadow: 0 0 6px #FFE044;
-  }
+  .rank-name { max-width: 32px; }
 
-  /* ── 조이패드 ── */
-  #mobile-controls {
-    display: block;
-    background: rgba(0,0,0,0.9);
-    padding: 6px 16px 10px;
-  }
+  /* 조이패드 표시 + 사이즈 */
+  #mobile-controls { display: block; }
   .dpad {
     width: 132px;
     height: 132px;
@@ -558,34 +532,6 @@ body::after {
     top: 44px; left: 44px;
     width: 44px; height: 44px;
   }
-  .ab-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 15px;
-  }
-  .ab-buttons { gap: 14px; }
-  .ab-label { width: 50px; font-size: 8px; }
-  .ab-labels { gap: 14px; }
-}
-
-/* EXIT 버튼 (데스크탑) */
-#exit-btn-desktop {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(136,170,204,0.2);
-  border-radius: 4px;
-  padding: 6px 10px;
-  color: #8899aa;
-  font-size: 10px;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 2px;
-  cursor: pointer;
-  width: 100%;
-  text-align: center;
-  transition: all 0.15s;
-}
-#exit-btn-desktop:hover {
-  border-color: #FF6644;
-  color: #FF6644;
 }
 
 /* ─── 점수 펄스 애니메이션 ───────────── */
