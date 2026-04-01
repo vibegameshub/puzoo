@@ -80,7 +80,11 @@ function calcSize() {
   if (isMobile) {
     const joystick = document.getElementById('mobile-controls');
     const joystickH = joystick ? joystick.offsetHeight : 200;
-    const availH = window.innerHeight - joystickH;
+    // visualViewport가 있으면 사용 (iOS 주소창 높이 제외한 실제 높이)
+    const trueH = window.visualViewport
+      ? window.visualViewport.height
+      : window.innerHeight;
+    const availH = trueH - joystickH;
     const availW = window.innerWidth - 65 * 2;
     cellSize = Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS));
     cellSize = Math.max(cellSize, 14);
@@ -120,7 +124,9 @@ function setJoystickHeight() {
   const joystick = document.getElementById('mobile-controls');
   if (!joystick) return;
 
-  const totalH = window.innerHeight;
+  const totalH = window.visualViewport
+    ? window.visualViewport.height
+    : window.innerHeight;
   const joystickH = joystick.offsetHeight;
   const availH = totalH - joystickH;
 
