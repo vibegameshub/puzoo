@@ -104,14 +104,15 @@ function calcSize() {
 
 // ─── 이펙트 캔버스 동기화 ──────────────────
 function syncEffectCanvas() {
-  const bw = gameCanvas.width;
-  const bh = gameCanvas.height;
-  const margin = 40;
-  effects.resize(bw + margin * 2, bh + margin * 2);
-  effectsCanvas.style.left = -margin + 'px';
-  effectsCanvas.style.top = -margin + 'px';
+  effectsCanvas.style.position = 'absolute';
+  effectsCanvas.style.left = '0';
+  effectsCanvas.style.top = '0';
+  effectsCanvas.style.width = gameCanvas.offsetWidth + 'px';
+  effectsCanvas.style.height = gameCanvas.offsetHeight + 'px';
+  effectsCanvas.width = gameCanvas.width;
+  effectsCanvas.height = gameCanvas.height;
   effectsCanvas.style.pointerEvents = 'none';
-  gameCanvas.style.pointerEvents = 'none';
+  effectsCanvas.style.zIndex = '10';
 }
 
 calcSize();
