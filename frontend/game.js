@@ -72,12 +72,20 @@ const nextCanvases = document.querySelectorAll('.next-canvas');
 
 const effects = new EffectsManager(effectsCanvas);
 
+// ─── 모바일 패널 DOM ──────────────────────
+const mobileHoldCanvas = document.getElementById('mobile-hold-canvas');
+const mobileHoldCtx = mobileHoldCanvas ? mobileHoldCanvas.getContext('2d') : null;
+const mobileNextCanvases = document.querySelectorAll('.m-next-canvas');
+
 // ─── 사이즈 계산 ───────────────────────────
 function calcSize() {
-  const maxH = window.innerHeight - (window.innerWidth <= 768 ? 220 : 40);
-  const maxW = window.innerWidth - (window.innerWidth <= 768 ? 20 : 380);
+  const isMobile = window.innerWidth <= 768;
+  const maxH = window.innerHeight - (isMobile ? 260 : 40);
+  const maxW = isMobile
+    ? window.innerWidth - 180   // 좌우 패널(80+80) + gap
+    : window.innerWidth - 380;
   cellSize = Math.floor(Math.min(maxH / ROWS, maxW / COLS, 32));
-  cellSize = Math.max(cellSize, 18);
+  cellSize = Math.max(cellSize, 14);
 
   const bw = COLS * cellSize;
   const bh = ROWS * cellSize;
@@ -156,6 +164,7 @@ function startGame() {
   drawHold();
   drawNextPreviews();
   loadRanking();
+  saveGameState();
 }
 
 // ─── 7-bag ─────────────────────────────────
@@ -302,6 +311,7 @@ function hold() {
     spawnPiece();
   }
   drawHold();
+  saveGameState();
 }
 
 function ghostY() {
@@ -389,6 +399,7 @@ function lock() {
 
   currentPiece = null;
   boardDirty = true;
+  saveGameState();
   checkLines();
 }
 
@@ -511,11 +522,13 @@ function finishClear() {
   boardDirty = true;
   updateUI();
   spawnPiece();
+  saveGameState();
 }
 
 // ─── 게임 오버 ─────────────────────────────
 function triggerGameOver() {
   state = 'gameover';
+  clearSavedState();
   boardDirty = true;
   gameOverStartTime = performance.now();
   gameOverFallData = [];
@@ -585,6 +598,17 @@ async function loadRanking() {
                      '<span class="rank-score">' + e.score.toLocaleString() + '</span>';
       ul.appendChild(li);
     });
+    // 모바일 TOP 3
+    const mul = document.getElementById('mobile-ranking-list');
+    if (mul) {
+      mul.innerHTML = '';
+      data.slice(0, 3).forEach((e, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = '<span class="rank-name">' + (i + 1) + '. ' + e.nickname + '</span>' +
+                       '<span class="rank-score">' + e.score.toLocaleString() + '</span>';
+        mul.appendChild(li);
+      });
+    }
     return data;
   } catch (e) { return null; }
 }
@@ -600,17 +624,42 @@ function updateUI() {
   document.getElementById('level-display').textContent = level;
   document.getElementById('lines-display').textContent = lines;
   document.getElementById('combo-display').textContent = combo;
+
+  // 모바일 패널 동기화
+  const mScore = document.getElementById('m-score');
+  if (mScore) {
+    mScore.textContent = score.toLocaleString();
+    document.getElementById('m-level').textContent = level;
+    document.getElementById('m-lines').textContent = lines;
+    document.getElementById('m-combo').textContent = combo;
+  }
+  // fever glow 동기화
+  const mcb = document.getElementById('mobile-combo-box');
+  if (mcb) {
+    if (feverMode) mcb.classList.add('fever-glow');
+    else mcb.classList.remove('fever-glow');
+  }
 }
 
 function drawHold() {
   holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+  if (mobileHoldCtx) mobileHoldCtx.clearRect(0, 0, mobileHoldCanvas.width, mobileHoldCanvas.height);
   if (!holdType) return;
   const floatY = Math.sin((prevTime || 0) * 0.003) * 2;
   drawPreview(holdCtx, holdCanvas, holdType, floatY);
+  if (mobileHoldCtx) drawPreview(mobileHoldCtx, mobileHoldCanvas, holdType, floatY);
 }
 
 function drawNextPreviews() {
   nextCanvases.forEach((cvs, i) => {
+    const ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    if (i < nextQueue.length) {
+      const floatY = Math.sin((prevTime || 0) * 0.003 + i * 0.7) * 2;
+      drawPreview(ctx, cvs, nextQueue[i], floatY);
+    }
+  });
+  mobileNextCanvases.forEach((cvs, i) => {
     const ctx = cvs.getContext('2d');
     ctx.clearRect(0, 0, cvs.width, cvs.height);
     if (i < nextQueue.length) {
@@ -657,6 +706,7 @@ document.addEventListener('keydown', (e) => {
     if (state === 'playing') {
       state = 'paused';
       document.getElementById('pause-overlay').classList.remove('hidden');
+      saveGameState();
     } else if (state === 'paused') {
       state = 'playing';
       lastDropTime = performance.now();
@@ -700,6 +750,7 @@ mobileBtn('btn-start', () => {
   if (state === 'playing') {
     state = 'paused';
     document.getElementById('pause-overlay').classList.remove('hidden');
+    saveGameState();
   } else if (state === 'paused') {
     state = 'playing';
     lastDropTime = performance.now();
@@ -919,8 +970,103 @@ function render(time) {
   }
 }
 
+// ─── sessionStorage 상태 저장/복원 ─────────
+function saveGameState() {
+  if (state !== 'playing' && state !== 'paused') return;
+  try {
+    const snapshot = {
+      board: board,
+      boardTypes: boardTypes,
+      currentPiece: currentPiece,
+      nextQueue: nextQueue,
+      bag: bag,
+      holdType: holdType,
+      canHold: canHold,
+      score: score,
+      level: level,
+      lines: lines,
+      combo: combo,
+      feverMode: feverMode,
+      gameState: state,
+      nickname: nickname,
+      difficulty: difficulty,
+      dropInterval: dropInterval
+    };
+    sessionStorage.setItem('puzooGameState', JSON.stringify(snapshot));
+  } catch (e) { /* storage full or unavailable */ }
+}
+
+function restoreGameState(snap) {
+  nickname = snap.nickname || 'Player';
+  difficulty = snap.difficulty || 'normal';
+  board = snap.board;
+  boardTypes = snap.boardTypes;
+  currentPiece = snap.currentPiece;
+  nextQueue = snap.nextQueue;
+  bag = snap.bag || [];
+  holdType = snap.holdType;
+  canHold = snap.canHold !== undefined ? snap.canHold : true;
+  score = snap.score || 0;
+  level = snap.level || 1;
+  lines = snap.lines || 0;
+  combo = snap.combo || 0;
+  feverMode = snap.feverMode || false;
+  dropInterval = snap.dropInterval || SPEEDS[difficulty];
+  clearRows = null;
+  clearStartTime = 0;
+  gameOverFallData = null;
+  gameOverStartTime = 0;
+  lastHardDrop = false;
+  lastDropTime = 0;
+
+  document.getElementById('start-modal').classList.add('hidden');
+  document.getElementById('gameover-modal').classList.add('hidden');
+
+  if (snap.gameState === 'paused') {
+    state = 'paused';
+    document.getElementById('pause-overlay').classList.remove('hidden');
+  } else {
+    state = 'playing';
+    document.getElementById('pause-overlay').classList.add('hidden');
+  }
+
+  effects.clear();
+  effects.initStars();
+  boardDirty = true;
+  updateUI();
+  drawHold();
+  drawNextPreviews();
+  loadRanking();
+}
+
+function clearSavedState() {
+  sessionStorage.removeItem('puzooGameState');
+}
+
+function tryRestoreGame() {
+  try {
+    const saved = sessionStorage.getItem('puzooGameState');
+    if (saved) {
+      const snap = JSON.parse(saved);
+      if (snap.gameState === 'playing' || snap.gameState === 'paused') {
+        restoreGameState(snap);
+        return true;
+      }
+    }
+  } catch (e) { /* corrupt data */ }
+  return false;
+}
+
+// 탭 전환/전체화면 시 상태 저장
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) saveGameState();
+});
+
 // ─── 시작 ──────────────────────────────────
 loadRanking();
+if (!tryRestoreGame()) {
+  // 저장된 상태 없으면 기본 시작 모달 표시
+}
 requestAnimationFrame(gameLoop);
 
 })();

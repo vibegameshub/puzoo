@@ -406,30 +406,198 @@ body::after {
   letter-spacing: 1px;
 }
 
+/* ─── 모바일 전용 패널 (데스크탑에서 숨김) ── */
+#mobile-stats-bar { display: none; }
+#mobile-left-panel { display: none; }
+#mobile-right-panel { display: none; }
+
 /* ─── 반응형: 모바일 ─────────────────── */
 @media (max-width: 768px) {
   body {
     align-items: flex-start;
-    padding-top: 8px;
+    padding-top: 4px;
     overflow-y: auto;
+    flex-direction: column;
   }
+
+  /* 모바일 상단 스탯 바 */
+  #mobile-stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 4px 8px;
+  }
+  .mstat {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(136,170,204,0.2);
+    border-radius: 4px;
+    padding: 3px 10px;
+    text-align: center;
+  }
+  .mstat-label {
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: #6688aa;
+    display: block;
+  }
+  .mstat-value {
+    font-size: 13px;
+    color: #fff;
+    text-shadow: 0 0 8px #88ccff;
+  }
+
+  /* 게임 컨테이너: 가로 배치 (좌패널 + 보드 + 우패널) */
   #game-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+  }
+
+  /* 데스크탑 전용 패널 숨김 */
+  #hold-panel { display: none; }
+  #side-panel { display: none; }
+
+  /* 모바일 좌측 패널 */
+  #mobile-left-panel {
+    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    width: 80px;
+    min-width: 60px;
+    flex-shrink: 1;
   }
-  #hold-panel { display: none; }
-  #side-panel {
-    flex-direction: row;
-    flex-wrap: wrap;
-    width: auto;
-    justify-content: center;
+  #mobile-left-panel .panel-title {
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+  #mobile-hold-canvas {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(136,170,204,0.25);
+    border-radius: 4px;
+    display: block;
+    width: 100%;
+    max-width: 80px;
+    height: auto;
+    aspect-ratio: 4/3;
+  }
+  #mobile-left-panel .info-box {
+    padding: 4px 6px;
+    width: 100%;
+  }
+  #mobile-left-panel .info-label {
+    font-size: 7px;
+  }
+  #mobile-left-panel .info-value {
+    font-size: 13px;
+  }
+  #mobile-combo-box .info-value {
+    color: #FFE044;
+    text-shadow: 0 0 8px #FFE044;
+  }
+
+  /* 모바일 우측 패널 */
+  #mobile-right-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 4px;
+    width: 80px;
+    min-width: 60px;
+    flex-shrink: 1;
   }
-  #side-panel .info-box { padding: 4px 8px; }
-  #side-panel #ranking-box { display: none; }
-  #next-panel { flex-direction: row; gap: 4px; }
+  #mobile-right-panel .panel-title {
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+  .m-next-canvas {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(136,170,204,0.12);
+    border-radius: 4px;
+    display: block;
+    width: 100%;
+    max-width: 80px;
+    height: auto;
+    aspect-ratio: 4/3;
+  }
+  #mobile-ranking-box {
+    padding: 4px 6px;
+    width: 100%;
+  }
+  #mobile-ranking-box .info-label {
+    font-size: 7px;
+  }
+  #mobile-ranking-list {
+    list-style: none;
+    font-size: 8px;
+    color: #8899aa;
+  }
+  #mobile-ranking-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    border-bottom: 1px solid rgba(136,170,204,0.06);
+  }
+  #mobile-ranking-list .rank-name {
+    color: #aabbcc;
+    max-width: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #mobile-ranking-list .rank-score {
+    color: #88ccff;
+    text-shadow: 0 0 4px #88ccff;
+  }
+  #mobile-ranking-list li:first-child .rank-score {
+    color: #FFE044;
+    text-shadow: 0 0 6px #FFE044;
+  }
+
   #mobile-controls { display: block; }
+
+  /* 조이패드 1.3배 확대 */
+  #mobile-controls {
+    padding: 8px 16px 14px;
+  }
+  .dpad {
+    width: 143px;
+    height: 143px;
+  }
+  .dpad-btn {
+    width: 47px;
+    height: 47px;
+    font-size: 18px;
+  }
+  .dpad-up    { top: 0;   left: 48px; }
+  .dpad-down  { bottom: 0; left: 48px; }
+  .dpad-left  { top: 48px; left: 0; }
+  .dpad-right { top: 48px; right: 0; }
+  .dpad-center {
+    top: 48px; left: 48px;
+    width: 47px; height: 47px;
+  }
+  .ab-btn {
+    width: 65px;
+    height: 65px;
+    font-size: 18px;
+  }
+  .ab-buttons {
+    gap: 18px;
+  }
+  .ab-label {
+    width: 65px;
+    font-size: 9px;
+  }
+  .ab-labels {
+    gap: 18px;
+  }
 }
 
 /* ─── 점수 펄스 애니메이션 ───────────── */
