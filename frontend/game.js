@@ -1008,26 +1008,44 @@ document.addEventListener('fullscreenchange', () => {
   }, 150);
 });
 
-// ─── EXIT 버튼 (전역 함수 — onclick에서 직접 호출) ────
+// ─── EXIT 버튼 (전역 함수 — iframe 안전: confirm() 대신 인게임 모달) ────
 window.handleExit = function() {
-  alert('EXIT 실행됨'); // 테스트용 - 나중에 삭제
-
   if (state === 'playing' || state === 'paused') {
-    if (!confirm('게임을 종료하고 처음으로 돌아갈까요?')) return;
+    const prevState = state;
+    state = 'paused';
+
+    const exitModal = document.getElementById('exit-modal');
+    exitModal.classList.remove('hidden');
+
+    document.getElementById('exit-confirm-btn').onclick = function() {
+      exitModal.classList.add('hidden');
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      state = 'start';
+      score = 0; level = 1; lines = 0; combo = 0;
+      holdType = null;
+      board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+      boardTypes = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+      clearAllCellStates();
+      gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+      effects.clear();
+      localStorage.removeItem('puzooGame');
+      document.getElementById('start-modal').classList.remove('hidden');
+    };
+
+    document.getElementById('exit-cancel-btn').onclick = function() {
+      exitModal.classList.add('hidden');
+      state = prevState;
+      if (state === 'playing' && !animFrameId) {
+        prevTime = performance.now();
+        animFrameId = requestAnimationFrame(gameLoop);
+      }
+    };
+  } else {
+    document.getElementById('start-modal').classList.remove('hidden');
   }
-
-  // 루프 정지
-  if (animFrameId) {
-    cancelAnimationFrame(animFrameId);
-    animFrameId = null;
-  }
-
-  // 상태 초기화
-  state = 'start';
-
-  // 시작 모달 표시
-  const modal = document.getElementById('start-modal');
-  if (modal) modal.classList.remove('hidden');
 };
 
 // ─── 시작 ──────────────────────────────────
