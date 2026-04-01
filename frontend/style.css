@@ -469,7 +469,7 @@ body::after {
   #game-container {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     width: 100%;
     gap: 2px;
@@ -485,7 +485,7 @@ body::after {
     align-items: center;
     width: 65px;
     flex-shrink: 0;
-    align-self: flex-start;
+    align-self: auto;
     gap: 3px;
   }
   #left-panel .panel-title {
@@ -519,7 +519,7 @@ body::after {
     align-items: center;
     width: 65px;
     flex-shrink: 0;
-    align-self: flex-start;
+    align-self: auto;
     gap: 3px;
   }
   #right-panel .panel-title {
@@ -549,7 +549,7 @@ body::after {
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
   }
 
   /* 조이패드 사이즈 */
