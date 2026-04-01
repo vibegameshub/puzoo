@@ -112,7 +112,6 @@ function calcSize() {
 }
 
 calcSize();
-window.addEventListener('resize', calcSize);
 
 // ─── UI 셋업 ───────────────────────────────
 document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -774,6 +773,13 @@ mobileBtn('btn-start', () => {
 // ─── 메인 게임 루프 ────────────────────────
 let prevTime = 0;
 let boardDirty = true;  // dirty flag: 보드 변경 시만 재렌더
+let animFrameId = null;
+
+function startGameLoop() {
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  prevTime = 0;
+  animFrameId = requestAnimationFrame(gameLoop);
+}
 
 function gameLoop(timestamp) {
   const dt = timestamp - prevTime;
@@ -782,7 +788,7 @@ function gameLoop(timestamp) {
   // 프레임 스킵 방지 (탭 전환 후 복귀 시)
   if (dt > 200) {
     lastDropTime = timestamp;
-    requestAnimationFrame(gameLoop);
+    animFrameId = requestAnimationFrame(gameLoop);
     return;
   }
 
@@ -858,7 +864,7 @@ function gameLoop(timestamp) {
   // ── 렌더링 ──
   render(timestamp);
 
-  requestAnimationFrame(gameLoop);
+  animFrameId = requestAnimationFrame(gameLoop);
 }
 
 // ─── 렌더링 ────────────────────────────────
@@ -1070,16 +1076,85 @@ function tryRestoreGame() {
   return false;
 }
 
-// 탭 전환/전체화면 시 상태 저장
+// ─── 이펙트 캔버스 동기화 ──────────────────
+function syncEffectCanvas() {
+  const bw = COLS * cellSize;
+  const bh = ROWS * cellSize;
+  const margin = 40;
+  effects.resize(bw + margin * 2, bh + margin * 2);
+  effectsCanvas.style.left = -margin + 'px';
+  effectsCanvas.style.top = -margin + 'px';
+}
+
+// ─── 화면 전환 감지 및 게임 루프 복원 ──────
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) saveGameState();
+  if (document.hidden) {
+    saveGameState();
+  } else {
+    // 복귀 시 게임 루프 재시작
+    if (state === 'playing' || state === 'paused' || state === 'clearing' || state === 'gameover') {
+      lastDropTime = 0;
+      startGameLoop();
+    }
+    calcSize();
+    syncEffectCanvas();
+    boardDirty = true;
+  }
 });
+
+window.addEventListener('resize', () => {
+  calcSize();
+  syncEffectCanvas();
+  boardDirty = true;
+  if (state === 'playing' || state === 'paused') {
+    render(prevTime || performance.now());
+  }
+});
+
+document.addEventListener('fullscreenchange', () => {
+  setTimeout(() => {
+    calcSize();
+    syncEffectCanvas();
+    boardDirty = true;
+    if (state === 'playing' || state === 'paused' || state === 'clearing' || state === 'gameover') {
+      lastDropTime = 0;
+      startGameLoop();
+    }
+  }, 100);
+});
+
+// ─── EXIT 버튼 ─────────────────────────────
+function exitGame() {
+  if (state === 'playing' || state === 'paused') {
+    if (!confirm('게임을 종료하고 처음으로 돌아갈까요?\n현재 점수는 저장되지 않습니다.')) return;
+  }
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  animFrameId = null;
+  state = 'start';
+  clearSavedState();
+  board = null;
+  boardTypes = null;
+  currentPiece = null;
+  holdType = null;
+  score = 0; level = 1; lines = 0; combo = 0;
+  effects.clear();
+  gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+  document.getElementById('gameover-modal').classList.add('hidden');
+  document.getElementById('pause-overlay').classList.add('hidden');
+  document.getElementById('start-modal').classList.remove('hidden');
+  startGameLoop();
+}
+
+// EXIT 버튼 바인딩
+const exitBtnDesktop = document.getElementById('exit-btn-desktop');
+if (exitBtnDesktop) exitBtnDesktop.addEventListener('click', exitGame);
+mobileBtn('btn-exit', exitGame);
 
 // ─── 시작 ──────────────────────────────────
 loadRanking();
 if (!tryRestoreGame()) {
   // 저장된 상태 없으면 기본 시작 모달 표시
 }
-requestAnimationFrame(gameLoop);
+startGameLoop();
 
 })();

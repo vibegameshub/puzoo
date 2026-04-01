@@ -423,12 +423,12 @@ body::after {
   #game-container {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    align-items: flex-end;
     justify-content: center;
     gap: 2px;
     width: 100%;
     height: calc(100vh - var(--joystick-h, 170px));
-    padding: 2px 0;
+    padding: 0;
   }
 
   /* 데스크탑 전용 패널 숨김 */
@@ -464,10 +464,11 @@ body::after {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-end;
     width: 60px;
     min-width: 60px;
     max-width: 60px;
-    padding-top: 4px;
+    padding-bottom: 4px;
     gap: 2px;
     flex-shrink: 0;
   }
@@ -482,7 +483,7 @@ body::after {
   #board-wrapper {
     flex: 1;
     display: flex;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: center;
   }
 
@@ -491,10 +492,11 @@ body::after {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-end;
     width: 60px;
     min-width: 60px;
     max-width: 60px;
-    padding-top: 4px;
+    padding-bottom: 4px;
     gap: 3px;
     flex-shrink: 0;
   }
@@ -564,6 +566,26 @@ body::after {
   .ab-buttons { gap: 14px; }
   .ab-label { width: 50px; font-size: 8px; }
   .ab-labels { gap: 14px; }
+}
+
+/* EXIT 버튼 (데스크탑) */
+#exit-btn-desktop {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(136,170,204,0.2);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: #8899aa;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: all 0.15s;
+}
+#exit-btn-desktop:hover {
+  border-color: #FF6644;
+  color: #FF6644;
 }
 
 /* ─── 점수 펄스 애니메이션 ───────────── */
