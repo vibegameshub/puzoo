@@ -80,8 +80,9 @@
 <!-- ─── 게임 레이아웃 (PC/모바일 공통 3컬럼) ── -->
 <div id="game-container">
 
-  <!-- 왼쪽 패널: HOLD + 스코어 -->
+  <!-- 왼쪽 패널: EXIT + HOLD + 스코어 -->
   <div id="left-panel">
+    <button class="exit-btn" id="exit-btn">EXIT</button>
     <div class="panel-title">HOLD</div>
     <canvas id="hold-canvas" width="110" height="80"></canvas>
     <div class="info-box"><div class="info-label">SCORE</div><div class="info-value" id="score-display">0</div></div>
@@ -97,9 +98,8 @@
     <div id="pause-overlay" class="hidden"><div id="pause-text">PAUSED</div></div>
   </div>
 
-  <!-- 오른쪽 패널: EXIT + NEXT + 랭킹 -->
+  <!-- 오른쪽 패널: NEXT + 랭킹 -->
   <div id="right-panel">
-    <button class="exit-btn" id="exit-btn">EXIT</button>
     <div class="panel-title">NEXT</div>
     <div id="next-panel">
       <canvas class="next-canvas" width="110" height="80"></canvas>

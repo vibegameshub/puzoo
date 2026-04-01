@@ -104,11 +104,12 @@ function calcSize() {
 
 // ─── 이펙트 캔버스 동기화 ──────────────────
 function syncEffectCanvas() {
-  effectsCanvas.style.position = 'absolute';
-  effectsCanvas.style.left = '0';
-  effectsCanvas.style.top = '0';
-  effectsCanvas.style.width = gameCanvas.offsetWidth + 'px';
-  effectsCanvas.style.height = gameCanvas.offsetHeight + 'px';
+  const boardRect = gameCanvas.getBoundingClientRect();
+  effectsCanvas.style.position = 'fixed';
+  effectsCanvas.style.left = boardRect.left + 'px';
+  effectsCanvas.style.top = boardRect.top + 'px';
+  effectsCanvas.style.width = boardRect.width + 'px';
+  effectsCanvas.style.height = boardRect.height + 'px';
   effectsCanvas.width = gameCanvas.width;
   effectsCanvas.height = gameCanvas.height;
   effectsCanvas.style.pointerEvents = 'none';
@@ -116,6 +117,20 @@ function syncEffectCanvas() {
 }
 
 calcSize();
+
+// ─── 모바일 레이아웃 보정 ─────────────────────
+function adjustMobileLayout() {
+  if (window.innerWidth > 768) return;
+  const joystick = document.getElementById('mobile-controls');
+  if (!joystick) return;
+  const joystickHeight = joystick.offsetHeight;
+  const container = document.getElementById('game-container');
+  container.style.height = (window.innerHeight - joystickHeight) + 'px';
+  container.style.alignItems = 'flex-end';
+  document.getElementById('left-panel').style.alignSelf = 'flex-end';
+  document.getElementById('right-panel').style.alignSelf = 'flex-end';
+  syncEffectCanvas();
+}
 
 // ─── UI 셋업 ───────────────────────────────
 document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -190,6 +205,7 @@ function startGame() {
     animFrameId = null;
   }
   startGameLoop();
+  setTimeout(syncEffectCanvas, 100);
 }
 
 // ─── 7-bag ─────────────────────────────────
@@ -902,7 +918,7 @@ function render(time) {
       if (alpha === 0) continue;
       drawAnimalCell(ctx, e.animal, e.c * cs, e.r * cs + e.dy, cs, e.r, e.c, alpha);
     }
-    effects.draw(40, 40, bw, bh, time);
+    effects.draw(0, 0, bw, bh, time);
     return;
   }
 
@@ -950,7 +966,7 @@ function render(time) {
   }
 
   // 이펙트 레이어
-  effects.draw(40, 40, bw, bh, time);
+  effects.draw(0, 0, bw, bh, time);
 
   // 프리뷰 플로팅
   if (state === 'playing' || state === 'clearing') {
@@ -983,6 +999,7 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('resize', () => {
   calcSize();
   syncEffectCanvas();
+  adjustMobileLayout();
   boardDirty = true;
   if (state === 'playing') {
     prevTime = performance.now();
@@ -997,6 +1014,7 @@ document.addEventListener('fullscreenchange', () => {
   setTimeout(() => {
     calcSize();
     syncEffectCanvas();
+    adjustMobileLayout();
     boardDirty = true;
     if (state === 'playing') {
       prevTime = performance.now();
@@ -1061,6 +1079,7 @@ window.addEventListener('load', () => {
     animFrameId = null;
   }
   document.getElementById('start-modal').classList.remove('hidden');
+  setTimeout(adjustMobileLayout, 100);
   startGameLoop();
 });
 

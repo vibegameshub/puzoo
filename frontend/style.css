@@ -499,7 +499,7 @@ body::after {
     width: 58px !important;
     height: 44px !important;
   }
-  #right-panel .exit-btn {
+  #left-panel .exit-btn {
     padding: 4px 6px;
     font-size: 8px;
   }
