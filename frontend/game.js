@@ -130,7 +130,7 @@ function setJoystickHeight() {
   }
 
   document.documentElement.style.setProperty('--joystick-height', joystickH + 'px');
-
+  calcSize();
   setTimeout(syncEffectCanvas, 50);
 }
 
@@ -1032,7 +1032,11 @@ document.addEventListener('fullscreenchange', () => {
 window.addEventListener('orientationchange', () => setTimeout(setJoystickHeight, 300));
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
-    setTimeout(setJoystickHeight, 50);
+    setTimeout(() => {
+      setJoystickHeight();
+      calcSize();
+      boardDirty = true;
+    }, 50);
   });
 }
 
