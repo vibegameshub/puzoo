@@ -71,6 +71,7 @@ const holdCtx      = holdCanvas.getContext('2d');
 const nextCanvases = document.querySelectorAll('.next-canvas');
 
 const effects = new EffectsManager(effectsCanvas);
+gameCanvas.style.pointerEvents = 'none';
 
 // ─── 사이즈 계산 ───────────────────────────
 function calcSize() {
@@ -178,6 +179,11 @@ function startGame() {
   drawHold();
   drawNextPreviews();
   loadRanking();
+  if (animFrameId) {
+    cancelAnimationFrame(animFrameId);
+    animFrameId = null;
+  }
+  startGameLoop();
 }
 
 // ─── 7-bag ─────────────────────────────────
@@ -998,30 +1004,24 @@ document.addEventListener('fullscreenchange', () => {
 
 // ─── EXIT 버튼 (전역 함수 — onclick에서 직접 호출) ────
 window.handleExit = function() {
-  alert('EXIT 실행됨');
-  console.log('EXIT 클릭됨');
+  alert('EXIT 실행됨'); // 테스트용 - 나중에 삭제
+
   if (state === 'playing' || state === 'paused') {
-    if (!confirm('게임을 종료하고 처음으로 돌아갈까요?\n현재 점수는 저장되지 않습니다.')) return;
+    if (!confirm('게임을 종료하고 처음으로 돌아갈까요?')) return;
   }
+
+  // 루프 정지
   if (animFrameId) {
     cancelAnimationFrame(animFrameId);
     animFrameId = null;
   }
+
+  // 상태 초기화
   state = 'start';
-  board = null;
-  boardTypes = null;
-  currentPiece = null;
-  holdType = null;
-  score = 0; level = 1; lines = 0; combo = 0;
-  feverMode = false;
-  effects.clear();
-  gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-  holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
-  const effectsCtx = effectsCanvas.getContext('2d');
-  effectsCtx.clearRect(0, 0, effectsCanvas.width, effectsCanvas.height);
-  document.getElementById('gameover-modal').classList.add('hidden');
-  document.getElementById('pause-overlay').classList.add('hidden');
-  document.getElementById('start-modal').classList.remove('hidden');
+
+  // 시작 모달 표시
+  const modal = document.getElementById('start-modal');
+  if (modal) modal.classList.remove('hidden');
 };
 
 // ─── 시작 ──────────────────────────────────
