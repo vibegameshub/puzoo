@@ -968,7 +968,15 @@ document.addEventListener('visibilitychange', () => {
 
 window.addEventListener('resize', () => {
   calcSize();
+  syncEffectCanvas();
   boardDirty = true;
+  if (state === 'playing') {
+    prevTime = performance.now();
+    lastDropTime = performance.now();
+    if (!animFrameId) {
+      animFrameId = requestAnimationFrame(gameLoop);
+    }
+  }
 });
 
 document.addEventListener('fullscreenchange', () => {
@@ -1011,7 +1019,6 @@ window.handleExit = function() {
   document.getElementById('gameover-modal').classList.add('hidden');
   document.getElementById('pause-overlay').classList.add('hidden');
   document.getElementById('start-modal').classList.remove('hidden');
-  startGameLoop();
 };
 
 // ─── 시작 ──────────────────────────────────
