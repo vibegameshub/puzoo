@@ -443,7 +443,7 @@ body::after {
 /* ─── 반응형: 모바일 ─────────────────── */
 @media (max-width: 768px) {
   body {
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: center;
     overflow: hidden;
     height: 100vh;
@@ -451,7 +451,7 @@ body::after {
 
   #game-container {
     gap: 2px;
-    align-items: flex-end;
+    align-items: flex-start;
     padding-bottom: var(--joystick-h, 170px);
     height: 100vh;
   }

@@ -176,7 +176,6 @@ function startGame() {
   drawHold();
   drawNextPreviews();
   loadRanking();
-  saveGameState();
 }
 
 // ─── 7-bag ─────────────────────────────────
@@ -323,7 +322,6 @@ function hold() {
     spawnPiece();
   }
   drawHold();
-  saveGameState();
 }
 
 function ghostY() {
@@ -411,7 +409,6 @@ function lock() {
 
   currentPiece = null;
   boardDirty = true;
-  saveGameState();
   checkLines();
 }
 
@@ -534,13 +531,11 @@ function finishClear() {
   boardDirty = true;
   updateUI();
   spawnPiece();
-  saveGameState();
 }
 
 // ─── 게임 오버 ─────────────────────────────
 function triggerGameOver() {
   state = 'gameover';
-  clearSavedState();
   boardDirty = true;
   gameOverStartTime = performance.now();
   gameOverFallData = [];
@@ -682,7 +677,6 @@ document.addEventListener('keydown', (e) => {
     if (state === 'playing') {
       state = 'paused';
       document.getElementById('pause-overlay').classList.remove('hidden');
-      saveGameState();
     } else if (state === 'paused') {
       state = 'playing';
       lastDropTime = performance.now();
@@ -726,7 +720,6 @@ mobileBtn('btn-start', () => {
   if (state === 'playing') {
     state = 'paused';
     document.getElementById('pause-overlay').classList.remove('hidden');
-    saveGameState();
   } else if (state === 'paused') {
     state = 'playing';
     lastDropTime = performance.now();
@@ -952,104 +945,23 @@ function render(time) {
   }
 }
 
-// ─── sessionStorage 상태 저장/복원 ─────────
-function saveGameState() {
-  if (state !== 'playing' && state !== 'paused') return;
-  try {
-    const snapshot = {
-      board: board,
-      boardTypes: boardTypes,
-      currentPiece: currentPiece,
-      nextQueue: nextQueue,
-      bag: bag,
-      holdType: holdType,
-      canHold: canHold,
-      score: score,
-      level: level,
-      lines: lines,
-      combo: combo,
-      feverMode: feverMode,
-      gameState: state,
-      nickname: nickname,
-      difficulty: difficulty,
-      dropInterval: dropInterval
-    };
-    sessionStorage.setItem('puzooGameState', JSON.stringify(snapshot));
-  } catch (e) { /* storage full or unavailable */ }
-}
-
-function restoreGameState(snap) {
-  nickname = snap.nickname || 'Player';
-  difficulty = snap.difficulty || 'normal';
-  board = snap.board;
-  boardTypes = snap.boardTypes;
-  currentPiece = snap.currentPiece;
-  nextQueue = snap.nextQueue;
-  bag = snap.bag || [];
-  holdType = snap.holdType;
-  canHold = snap.canHold !== undefined ? snap.canHold : true;
-  score = snap.score || 0;
-  level = snap.level || 1;
-  lines = snap.lines || 0;
-  combo = snap.combo || 0;
-  feverMode = snap.feverMode || false;
-  dropInterval = snap.dropInterval || SPEEDS[difficulty];
-  clearRows = null;
-  clearStartTime = 0;
-  gameOverFallData = null;
-  gameOverStartTime = 0;
-  lastHardDrop = false;
-  lastDropTime = 0;
-
-  document.getElementById('start-modal').classList.add('hidden');
-  document.getElementById('gameover-modal').classList.add('hidden');
-
-  if (snap.gameState === 'paused') {
-    state = 'paused';
-    document.getElementById('pause-overlay').classList.remove('hidden');
-  } else {
-    state = 'playing';
-    document.getElementById('pause-overlay').classList.add('hidden');
-  }
-
-  effects.clear();
-  effects.initStars();
-  boardDirty = true;
-  updateUI();
-  drawHold();
-  drawNextPreviews();
-  loadRanking();
-}
-
-function clearSavedState() {
-  sessionStorage.removeItem('puzooGameState');
-}
-
-function tryRestoreGame() {
-  try {
-    const saved = sessionStorage.getItem('puzooGameState');
-    if (saved) {
-      const snap = JSON.parse(saved);
-      if (snap.gameState === 'playing' || snap.gameState === 'paused') {
-        restoreGameState(snap);
-        return true;
-      }
-    }
-  } catch (e) { /* corrupt data */ }
-  return false;
-}
-
 // ─── 화면 전환 감지 및 게임 루프 복원 ──────
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    saveGameState();
-  } else {
-    if (state === 'playing' || state === 'paused' || state === 'clearing' || state === 'gameover') {
-      lastDropTime = 0;
-      startGameLoop();
+  if (document.visibilityState === 'visible') {
+    // 복귀 시 타임스탬프 리셋 + 루프 재시작
+    prevTime = 0;
+    lastDropTime = 0;
+    if (!animFrameId) {
+      animFrameId = requestAnimationFrame(gameLoop);
     }
     calcSize();
     boardDirty = true;
+  } else {
+    // 화면 숨겨지면 루프 정지 (배터리 절약)
+    if (animFrameId) {
+      cancelAnimationFrame(animFrameId);
+      animFrameId = null;
+    }
   }
 });
 
@@ -1062,11 +974,12 @@ document.addEventListener('fullscreenchange', () => {
   setTimeout(() => {
     calcSize();
     boardDirty = true;
-    if (state === 'playing' || state === 'paused' || state === 'clearing' || state === 'gameover') {
-      lastDropTime = 0;
-      startGameLoop();
+    prevTime = 0;
+    lastDropTime = 0;
+    if (!animFrameId) {
+      animFrameId = requestAnimationFrame(gameLoop);
     }
-  }, 100);
+  }, 150);
 });
 
 // ─── EXIT 버튼 ─────────────────────────────
@@ -1079,7 +992,6 @@ function handleExit() {
     animFrameId = null;
   }
   state = 'start';
-  clearSavedState();
   board = null;
   boardTypes = null;
   currentPiece = null;
@@ -1089,29 +1001,33 @@ function handleExit() {
   effects.clear();
   gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+  const effectsCtx = effectsCanvas.getContext('2d');
+  effectsCtx.clearRect(0, 0, effectsCanvas.width, effectsCanvas.height);
   document.getElementById('gameover-modal').classList.add('hidden');
   document.getElementById('pause-overlay').classList.add('hidden');
   document.getElementById('start-modal').classList.remove('hidden');
   startGameLoop();
 }
 
-// EXIT 버튼 바인딩 (click + touchend 모두)
-document.querySelectorAll('.exit-btn').forEach(btn => {
+// EXIT 버튼 바인딩 (id 기반으로 직접 등록)
+['exit-btn', 'btn-exit'].forEach(id => {
+  const btn = document.getElementById(id);
+  if (!btn) return;
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     handleExit();
   });
-  btn.addEventListener('touchend', (e) => {
+  btn.addEventListener('touchstart', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     handleExit();
-  });
+  }, { passive: false });
 });
 
 // ─── 시작 ──────────────────────────────────
+// 새로고침 시 항상 시작 모달부터
+sessionStorage.removeItem('puzooGameState');
 loadRanking();
-if (!tryRestoreGame()) {
-  // 저장된 상태 없으면 기본 시작 모달 표시
-}
 startGameLoop();
 
 })();
