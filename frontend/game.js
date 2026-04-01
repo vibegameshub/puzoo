@@ -7,7 +7,7 @@
 const COLS = 10;
 const ROWS = 20;
 const DANGER_ROWS = 4;
-const API = 'http://localhost:3000';
+const API = 'https://fearless-emotion-production.up.railway.app';
 
 const SHAPES = {
   I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
