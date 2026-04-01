@@ -465,14 +465,13 @@ body::after {
     height: 100vh;
   }
 
-  /* 게임 컨테이너: 남은 화면 전체 */
+  /* 게임 컨테이너: 높이는 JS로만 제어 */
   #game-container {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     justify-content: center;
     width: 100%;
-    height: calc(100vh - var(--joystick-height, 200px));
     gap: 2px;
     padding: 0;
     margin: 0;

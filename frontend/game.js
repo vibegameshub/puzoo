@@ -113,13 +113,25 @@ function syncEffectCanvas() {
   effectsCanvas.style.zIndex = '10';
 }
 
-// ─── 모바일 조이패드 높이 → CSS 변수 ─────────
+// ─── 모바일 조이패드 높이 → JS로 컨테이너 높이 제어 ───
 function setJoystickHeight() {
+  if (window.innerWidth > 768) return;
+
   const joystick = document.getElementById('mobile-controls');
-  if (!joystick || window.innerWidth > 768) return;
-  const h = joystick.offsetHeight;
-  document.documentElement.style.setProperty('--joystick-height', h + 'px');
-  syncEffectCanvas();
+  if (!joystick) return;
+
+  const totalH = window.innerHeight;
+  const joystickH = joystick.offsetHeight;
+  const availH = totalH - joystickH;
+
+  const container = document.getElementById('game-container');
+  if (container) {
+    container.style.height = availH + 'px';
+  }
+
+  document.documentElement.style.setProperty('--joystick-height', joystickH + 'px');
+
+  setTimeout(syncEffectCanvas, 50);
 }
 
 calcSize();
@@ -1015,6 +1027,14 @@ document.addEventListener('fullscreenchange', () => {
     }
   }, 150);
 });
+
+// iOS Safari 주소창 숨김/표시 감지
+window.addEventListener('orientationchange', () => setTimeout(setJoystickHeight, 300));
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    setTimeout(setJoystickHeight, 50);
+  });
+}
 
 // ─── EXIT 버튼 (전역 함수 — iframe 안전: confirm() 대신 인게임 모달) ────
 window.handleExit = function() {
