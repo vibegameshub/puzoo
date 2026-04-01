@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PUZOO</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ─── 시작 모달 ──────────────────────── -->
+<div id="start-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">PUZOO</div>
+    <div class="modal-subtitle-main">CUTE BLOCK PUZZLE</div>
+
+    <div class="modal-subtitle">NICKNAME</div>
+    <input type="text" id="nickname-input" class="modal-input" maxlength="20" placeholder="Player" autofocus>
+
+    <div class="modal-subtitle">DIFFICULTY</div>
+    <div class="diff-buttons">
+      <button class="diff-btn" data-diff="easy">EASY</button>
+      <button class="diff-btn selected" data-diff="normal">NORMAL</button>
+      <button class="diff-btn" data-diff="hard">HARD</button>
+    </div>
+
+    <div class="controls-section">
+      <div class="modal-subtitle">CONTROLS</div>
+      <div class="controls-tabs">
+        <button class="ctrl-tab active" data-tab="pc">PC</button>
+        <button class="ctrl-tab" data-tab="mobile">MOBILE</button>
+      </div>
+      <div id="ctrl-pc" class="ctrl-content active">
+        <div class="ctrl-row"><span class="ctrl-key">&larr; &rarr;</span><span>Move</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">&darr;</span><span>Soft Drop</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">&uarr; / X</span><span>Rotate</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">SPACE</span><span>Hard Drop</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">C</span><span>Hold</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">P / ESC</span><span>Pause</span></div>
+      </div>
+      <div id="ctrl-mobile" class="ctrl-content">
+        <div class="ctrl-row"><span class="ctrl-key">D-PAD</span><span>Move / Drop / Rotate</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">A (green)</span><span>Rotate</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">B (red)</span><span>Hard Drop</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">SELECT</span><span>Hold</span></div>
+        <div class="ctrl-row"><span class="ctrl-key">START</span><span>Pause</span></div>
+      </div>
+    </div>
+
+    <button id="start-btn" class="btn-main">START</button>
+  </div>
+</div>
+
+<!-- ─── 게임오버 모달 ──────────────────── -->
+<div id="gameover-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-title">GAME OVER</div>
+    <div class="go-score" id="final-score">0</div>
+    <div class="go-info" id="final-info"></div>
+    <div class="go-rank" id="final-rank"></div>
+    <button id="retry-btn" class="btn-main">RETRY</button>
+  </div>
+</div>
+
+<!-- ─── 게임 레이아웃 ──────────────────── -->
+<div id="game-container">
+  <!-- HOLD -->
+  <div id="hold-panel">
+    <div class="panel-title">HOLD</div>
+    <canvas id="hold-canvas" width="110" height="80"></canvas>
+  </div>
+
+  <!-- 보드 -->
+  <div id="board-wrapper">
+    <canvas id="game-canvas"></canvas>
+    <canvas id="effects-canvas"></canvas>
+    <div id="pause-overlay" class="hidden"><div id="pause-text">PAUSED</div></div>
+  </div>
+
+  <!-- 사이드 패널 -->
+  <div id="side-panel">
+    <div class="info-box"><div class="info-label">SCORE</div><div class="info-value" id="score-display">0</div></div>
+    <div class="info-box"><div class="info-label">LEVEL</div><div class="info-value" id="level-display">1</div></div>
+    <div class="info-box"><div class="info-label">LINES</div><div class="info-value" id="lines-display">0</div></div>
+    <div class="info-box" id="combo-box"><div class="info-label">COMBO</div><div class="info-value" id="combo-display">0</div></div>
+    <div>
+      <div class="panel-title">NEXT</div>
+      <div id="next-panel">
+        <canvas class="next-canvas" width="110" height="80"></canvas>
+        <canvas class="next-canvas" width="110" height="80"></canvas>
+        <canvas class="next-canvas" width="110" height="80"></canvas>
+      </div>
+    </div>
+    <div class="info-box" id="ranking-box">
+      <div class="info-label">TOP 10</div>
+      <ul id="ranking-list"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 모바일 게임보이 컨트롤러 ────────── -->
+<div id="mobile-controls">
+  <div class="ctrl-top-row">
+    <button class="ctrl-small-btn" id="btn-select">SELECT</button>
+    <button class="ctrl-small-btn" id="btn-start">START</button>
+  </div>
+  <div class="ctrl-bottom-row">
+    <div class="dpad">
+      <button class="dpad-btn dpad-up" id="dpad-up">&#9650;</button>
+      <button class="dpad-btn dpad-left" id="dpad-left">&#9664;</button>
+      <div class="dpad-center"></div>
+      <button class="dpad-btn dpad-right" id="dpad-right">&#9654;</button>
+      <button class="dpad-btn dpad-down" id="dpad-down">&#9660;</button>
+    </div>
+    <div>
+      <div class="ab-buttons">
+        <button class="ab-btn btn-b" id="btn-b">B</button>
+        <button class="ab-btn btn-a" id="btn-a">A</button>
+      </div>
+      <div class="ab-labels">
+        <div class="ab-label">DROP</div>
+        <div class="ab-label">ROTATE</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="sound.js"></script>
+<script src="animals.js"></script>
+<script src="effects.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
