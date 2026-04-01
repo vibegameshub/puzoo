@@ -78,14 +78,11 @@ function calcSize() {
   const isMobile = window.innerWidth <= 768;
 
   if (isMobile) {
-    const ctrl = document.getElementById('mobile-controls');
-    const joystickH = ctrl ? ctrl.offsetHeight : 170;
-    document.documentElement.style.setProperty('--joystick-h', joystickH + 'px');
-
-    const sidePanel = 65;
-    const availW = window.innerWidth - sidePanel * 2 - 8;
-    const availH = window.innerHeight - joystickH - 8;
-    cellSize = Math.floor(Math.min(availW / COLS, availH / ROWS));
+    const joystick = document.getElementById('mobile-controls');
+    const joystickH = joystick ? joystick.offsetHeight : 200;
+    const availH = window.innerHeight - joystickH;
+    const availW = window.innerWidth - 65 * 2;
+    cellSize = Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS));
     cellSize = Math.max(cellSize, 14);
   } else {
     const maxH = window.innerHeight - 40;
@@ -116,21 +113,16 @@ function syncEffectCanvas() {
   effectsCanvas.style.zIndex = '10';
 }
 
-calcSize();
-
-// ─── 모바일 레이아웃 보정 ─────────────────────
-function adjustMobileLayout() {
-  if (window.innerWidth > 768) return;
+// ─── 모바일 조이패드 높이 → CSS 변수 ─────────
+function setJoystickHeight() {
   const joystick = document.getElementById('mobile-controls');
-  if (!joystick) return;
-  const joystickHeight = joystick.offsetHeight;
-  const container = document.getElementById('game-container');
-  container.style.height = (window.innerHeight - joystickHeight) + 'px';
-  container.style.alignItems = 'flex-end';
-  document.getElementById('left-panel').style.alignSelf = 'flex-end';
-  document.getElementById('right-panel').style.alignSelf = 'flex-end';
+  if (!joystick || window.innerWidth > 768) return;
+  const h = joystick.offsetHeight;
+  document.documentElement.style.setProperty('--joystick-height', h + 'px');
   syncEffectCanvas();
 }
+
+calcSize();
 
 // ─── UI 셋업 ───────────────────────────────
 document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -997,9 +989,8 @@ document.addEventListener('visibilitychange', () => {
 });
 
 window.addEventListener('resize', () => {
+  setJoystickHeight();
   calcSize();
-  syncEffectCanvas();
-  adjustMobileLayout();
   boardDirty = true;
   if (state === 'playing') {
     prevTime = performance.now();
@@ -1012,9 +1003,8 @@ window.addEventListener('resize', () => {
 
 document.addEventListener('fullscreenchange', () => {
   setTimeout(() => {
+    setJoystickHeight();
     calcSize();
-    syncEffectCanvas();
-    adjustMobileLayout();
     boardDirty = true;
     if (state === 'playing') {
       prevTime = performance.now();
@@ -1079,7 +1069,7 @@ window.addEventListener('load', () => {
     animFrameId = null;
   }
   document.getElementById('start-modal').classList.remove('hidden');
-  setTimeout(adjustMobileLayout, 100);
+  setTimeout(setJoystickHeight, 100);
   startGameLoop();
 });
 

@@ -445,23 +445,48 @@ body::after {
 
 /* ─── 반응형: 모바일 ─────────────────── */
 @media (max-width: 768px) {
+  /* 조이패드 고정 */
+  #mobile-controls {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(0,0,0,0.95);
+  }
+
+  /* 전체 페이지가 조이패드 높이만큼 패딩 */
   body {
+    padding-bottom: var(--joystick-height, 200px);
     align-items: flex-start;
     justify-content: center;
     overflow: hidden;
     height: 100vh;
   }
 
+  /* 게임 컨테이너: 남은 화면 전체 */
   #game-container {
-    gap: 2px;
+    display: flex;
+    flex-direction: row;
     align-items: flex-start;
-    padding-bottom: var(--joystick-h, 170px);
-    height: 100vh;
+    justify-content: center;
+    width: 100%;
+    height: calc(100vh - var(--joystick-height, 200px));
+    gap: 2px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
   }
 
-  /* 왼쪽 패널 축소 */
+  /* 사이드패널: 게임보드 상단에 맞춤 (PC와 동일) */
   #left-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 65px;
+    flex-shrink: 0;
+    align-self: flex-start;
     gap: 3px;
   }
   #left-panel .panel-title {
@@ -484,10 +509,18 @@ body::after {
   #left-panel .info-value {
     font-size: 11px;
   }
+  #left-panel .exit-btn {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
 
-  /* 오른쪽 패널 축소 */
   #right-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 65px;
+    flex-shrink: 0;
+    align-self: flex-start;
     gap: 3px;
   }
   #right-panel .panel-title {
@@ -498,10 +531,6 @@ body::after {
   .next-canvas {
     width: 58px !important;
     height: 44px !important;
-  }
-  #left-panel .exit-btn {
-    padding: 4px 6px;
-    font-size: 8px;
   }
   #ranking-box {
     padding: 3px 4px;
@@ -516,8 +545,15 @@ body::after {
   }
   .rank-name { max-width: 32px; }
 
-  /* 조이패드 표시 + 사이즈 */
-  #mobile-controls { display: block; }
+  /* 게임보드: 남은 너비 전체 사용 */
+  #board-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  /* 조이패드 사이즈 */
   .dpad {
     width: 132px;
     height: 132px;
