@@ -63,15 +63,8 @@
 </div>
 
 <!-- ─── 게임 레이아웃 ──────────────────── -->
-<!-- 모바일 상단 스탯 바 -->
-<div id="mobile-stats-bar">
-  <div class="mstat"><span class="mstat-label">SCORE</span><span class="mstat-value" id="m-score">0</span></div>
-  <div class="mstat"><span class="mstat-label">LEVEL</span><span class="mstat-value" id="m-level">1</span></div>
-  <div class="mstat"><span class="mstat-label">LINES</span><span class="mstat-value" id="m-lines">0</span></div>
-</div>
-
 <div id="game-container">
-  <!-- HOLD -->
+  <!-- HOLD (데스크탑) -->
   <div id="hold-panel">
     <div class="panel-title">HOLD</div>
     <canvas id="hold-canvas" width="110" height="80"></canvas>
@@ -79,12 +72,12 @@
 
   <!-- 모바일 좌측 패널 -->
   <div id="mobile-left-panel">
-    <div class="panel-title">HOLD</div>
-    <canvas id="mobile-hold-canvas" width="80" height="60"></canvas>
-    <div class="info-box" id="mobile-combo-box">
-      <div class="info-label">COMBO</div>
-      <div class="info-value" id="m-combo">0</div>
-    </div>
+    <div class="mp-box"><div class="mp-label">SCORE</div><div class="mp-value" id="m-score">0</div></div>
+    <div class="mp-box"><div class="mp-label">LEVEL</div><div class="mp-value" id="m-level">1</div></div>
+    <div class="mp-box"><div class="mp-label">LINES</div><div class="mp-value" id="m-lines">0</div></div>
+    <div class="mp-label">HOLD</div>
+    <canvas id="mobile-hold-canvas" width="56" height="42"></canvas>
+    <div class="mp-box" id="mobile-combo-box"><div class="mp-label">COMBO</div><div class="mp-value" id="m-combo">0</div></div>
   </div>
 
   <!-- 보드 -->
@@ -96,14 +89,12 @@
 
   <!-- 모바일 우측 패널 -->
   <div id="mobile-right-panel">
-    <div class="panel-title">NEXT</div>
-    <canvas class="m-next-canvas" width="80" height="60"></canvas>
-    <canvas class="m-next-canvas" width="80" height="60"></canvas>
-    <canvas class="m-next-canvas" width="80" height="60"></canvas>
-    <div class="info-box" id="mobile-ranking-box">
-      <div class="info-label">TOP 3</div>
-      <ul id="mobile-ranking-list"></ul>
-    </div>
+    <div class="mp-label">NEXT</div>
+    <canvas class="m-next-canvas" width="56" height="42"></canvas>
+    <canvas class="m-next-canvas" width="56" height="42"></canvas>
+    <canvas class="m-next-canvas" width="56" height="42"></canvas>
+    <div class="mp-label" style="margin-top:4px">TOP 3</div>
+    <ul id="mobile-ranking-list"></ul>
   </div>
 
   <!-- 사이드 패널 (데스크탑) -->

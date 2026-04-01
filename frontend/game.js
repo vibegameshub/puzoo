@@ -80,12 +80,25 @@ const mobileNextCanvases = document.querySelectorAll('.m-next-canvas');
 // ─── 사이즈 계산 ───────────────────────────
 function calcSize() {
   const isMobile = window.innerWidth <= 768;
-  const maxH = window.innerHeight - (isMobile ? 260 : 40);
-  const maxW = isMobile
-    ? window.innerWidth - 180   // 좌우 패널(80+80) + gap
-    : window.innerWidth - 380;
-  cellSize = Math.floor(Math.min(maxH / ROWS, maxW / COLS, 32));
-  cellSize = Math.max(cellSize, 14);
+
+  if (isMobile) {
+    // 조이패드 높이 측정
+    const ctrl = document.getElementById('mobile-controls');
+    const joystickH = ctrl ? ctrl.offsetHeight : 170;
+    // CSS 변수로 조이패드 높이 전달
+    document.documentElement.style.setProperty('--joystick-h', joystickH + 'px');
+
+    const sidePanel = 60;
+    const availW = window.innerWidth - sidePanel * 2 - 8; // gap 여유
+    const availH = window.innerHeight - joystickH - 8;    // 상하 여유
+    cellSize = Math.floor(Math.min(availW / COLS, availH / ROWS));
+    cellSize = Math.max(cellSize, 14);
+  } else {
+    const maxH = window.innerHeight - 40;
+    const maxW = window.innerWidth - 380;
+    cellSize = Math.floor(Math.min(maxH / ROWS, maxW / COLS, 32));
+    cellSize = Math.max(cellSize, 18);
+  }
 
   const bw = COLS * cellSize;
   const bh = ROWS * cellSize;
