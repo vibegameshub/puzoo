@@ -125,7 +125,10 @@ body::after {
 }
 
 /* EXIT 버튼 */
-.exit-btn {
+.exit-btn, #exit-btn {
+  position: relative;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(136,170,204,0.2);
   border-radius: 4px;

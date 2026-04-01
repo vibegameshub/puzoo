@@ -109,6 +109,8 @@ function syncEffectCanvas() {
   effects.resize(bw + margin * 2, bh + margin * 2);
   effectsCanvas.style.left = -margin + 'px';
   effectsCanvas.style.top = -margin + 'px';
+  effectsCanvas.style.pointerEvents = 'none';
+  gameCanvas.style.pointerEvents = 'none';
 }
 
 calcSize();
