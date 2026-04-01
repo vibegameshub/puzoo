@@ -84,7 +84,7 @@
 
   <!-- 오른쪽 패널: EXIT + NEXT + 랭킹 -->
   <div id="right-panel">
-    <button class="exit-btn" id="exit-btn">EXIT</button>
+    <button class="exit-btn" id="exit-btn" onclick="handleExit()">EXIT</button>
     <div class="panel-title">NEXT</div>
     <div id="next-panel">
       <canvas class="next-canvas" width="110" height="80"></canvas>
@@ -102,7 +102,6 @@
 <!-- ─── 모바일 게임보이 컨트롤러 ────────── -->
 <div id="mobile-controls">
   <div class="ctrl-top-row">
-    <button class="ctrl-small-btn exit-btn" id="btn-exit">EXIT</button>
     <button class="ctrl-small-btn" id="btn-select">SELECT</button>
     <button class="ctrl-small-btn" id="btn-start">START</button>
   </div>

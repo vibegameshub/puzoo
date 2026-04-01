@@ -948,16 +948,17 @@ function render(time) {
 // ─── 화면 전환 감지 및 게임 루프 복원 ──────
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
-    // 복귀 시 타임스탬프 리셋 + 루프 재시작
-    prevTime = 0;
-    lastDropTime = 0;
-    if (!animFrameId) {
-      animFrameId = requestAnimationFrame(gameLoop);
-    }
     calcSize();
+    syncEffectCanvas();
     boardDirty = true;
+    if (state === 'playing') {
+      prevTime = performance.now();
+      lastDropTime = performance.now();
+      if (!animFrameId) {
+        animFrameId = requestAnimationFrame(gameLoop);
+      }
+    }
   } else {
-    // 화면 숨겨지면 루프 정지 (배터리 절약)
     if (animFrameId) {
       cancelAnimationFrame(animFrameId);
       animFrameId = null;
@@ -973,17 +974,21 @@ window.addEventListener('resize', () => {
 document.addEventListener('fullscreenchange', () => {
   setTimeout(() => {
     calcSize();
+    syncEffectCanvas();
     boardDirty = true;
-    prevTime = 0;
-    lastDropTime = 0;
-    if (!animFrameId) {
-      animFrameId = requestAnimationFrame(gameLoop);
+    if (state === 'playing') {
+      prevTime = performance.now();
+      lastDropTime = performance.now();
+      if (!animFrameId) {
+        animFrameId = requestAnimationFrame(gameLoop);
+      }
     }
   }, 150);
 });
 
-// ─── EXIT 버튼 ─────────────────────────────
-function handleExit() {
+// ─── EXIT 버튼 (전역 함수 — onclick에서 직접 호출) ────
+window.handleExit = function() {
+  console.log('EXIT 클릭됨');
   if (state === 'playing' || state === 'paused') {
     if (!confirm('게임을 종료하고 처음으로 돌아갈까요?\n현재 점수는 저장되지 않습니다.')) return;
   }
@@ -1007,27 +1012,22 @@ function handleExit() {
   document.getElementById('pause-overlay').classList.add('hidden');
   document.getElementById('start-modal').classList.remove('hidden');
   startGameLoop();
-}
-
-// EXIT 버튼 바인딩 (id 기반으로 직접 등록)
-['exit-btn', 'btn-exit'].forEach(id => {
-  const btn = document.getElementById(id);
-  if (!btn) return;
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    handleExit();
-  });
-  btn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    handleExit();
-  }, { passive: false });
-});
+};
 
 // ─── 시작 ──────────────────────────────────
 // 새로고침 시 항상 시작 모달부터
 sessionStorage.removeItem('puzooGameState');
 loadRanking();
-startGameLoop();
+
+window.addEventListener('load', () => {
+  sessionStorage.clear();
+  state = 'start';
+  if (animFrameId) {
+    cancelAnimationFrame(animFrameId);
+    animFrameId = null;
+  }
+  document.getElementById('start-modal').classList.remove('hidden');
+  startGameLoop();
+});
 
 })();
