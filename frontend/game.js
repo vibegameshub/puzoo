@@ -996,6 +996,7 @@ document.addEventListener('fullscreenchange', () => {
 
 // ─── EXIT 버튼 (전역 함수 — onclick에서 직접 호출) ────
 window.handleExit = function() {
+  alert('EXIT 실행됨');
   console.log('EXIT 클릭됨');
   if (state === 'playing' || state === 'paused') {
     if (!confirm('게임을 종료하고 처음으로 돌아갈까요?\n현재 점수는 저장되지 않습니다.')) return;
